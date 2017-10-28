@@ -4,12 +4,12 @@ public class SpeechRecognition {
 
     private final long offset;
     private final long duration;
-    private final NBest nbest;
+    private final String text;
 
-    public SpeechRecognition(long offset, long duration, NBest nbest) {
+    public SpeechRecognition(long offset, long duration, String text) {
         this.offset = offset;
         this.duration = duration;
-        this.nbest = nbest;
+        this.text = text;
     }
 
     public long getOffset() {
@@ -20,7 +20,7 @@ public class SpeechRecognition {
         return duration;
     }
 
-    public NBest getNbest() {
-        return nbest;
+    public String getText() {
+        return text;
     }
 }

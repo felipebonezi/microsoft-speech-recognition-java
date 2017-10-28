@@ -8,10 +8,8 @@ import com.oracle.javafx.jmx.json.JSONFactory;
 import com.oracle.javafx.jmx.json.JSONReader;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Properties;
+import java.util.ResourceBundle;
 
 public class WSClient {
 
@@ -54,12 +52,7 @@ public class WSClient {
         static final String RECOGNITION_STATUS = "RecognitionStatus";
         static final String OFFSET = "Offset";
         static final String DURATION = "Duration";
-        static final String N_BEST = "NBest";
-        static final String CONFIDENCE = "confidence";
-        static final String LEXICAL = "lexical";
-        static final String ITN = "ITN";
-        static final String MASKED_ITN = "MaskedITN";
-        static final String DISPLAY = "Display";
+        static final String DISPLAY_TEXT = "DisplayText";
     }
 
     /**
@@ -81,16 +74,8 @@ public class WSClient {
     private String mSubscriptionKey;
 
     public WSClient() {
-        // TODO Refactor this code to load Properties file.
-        Properties prop = new Properties();
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        InputStream stream = loader.getResourceAsStream("conf/microsoft-config.properties");
-        try {
-            prop.load(stream);
-            this.mSubscriptionKey = prop.getProperty("microsoft.speechRecognition.subscriptionKey");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        ResourceBundle rb = ResourceBundle.getBundle("microsoft-config");
+        this.mSubscriptionKey = rb.getString("microsoft.speechRecognition.subscriptionKey");
     }
 
     public WSClient(String subscriptionKey) {
@@ -179,16 +164,9 @@ public class WSClient {
 
         Number offset = jsonDocument.getNumber(Parameter.OFFSET);
         Number duration = jsonDocument.getNumber(Parameter.DURATION);
+        String text = jsonDocument.getString(Parameter.DISPLAY_TEXT);
 
-        JSONDocument jsonNBest = jsonDocument.get(Parameter.N_BEST);
-        Number confidence = jsonNBest.getNumber(Parameter.CONFIDENCE);
-        String lexical = jsonNBest.getString(Parameter.LEXICAL);
-        String itn = jsonNBest.getString(Parameter.ITN);
-        String maskedITN = jsonNBest.getString(Parameter.MASKED_ITN);
-        String display = jsonNBest.getString(Parameter.DISPLAY);
-
-        NBest nbest = new NBest(confidence.doubleValue(), lexical, itn, maskedITN, display);
-        return new SpeechRecognition(offset.longValue(), duration.longValue(), nbest);
+        return new SpeechRecognition(offset.longValue(), duration.longValue(), text);
     }
 
 }

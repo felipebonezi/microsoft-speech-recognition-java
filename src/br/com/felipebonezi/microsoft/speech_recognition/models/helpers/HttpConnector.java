@@ -26,7 +26,7 @@ class HttpConnector {
     }
 
     public HttpConnector addHeader(String key, String value) {
-        addHeader(key, value);
+        addHeader(key, new String[] {value});
         return this;
     }
 
@@ -37,9 +37,12 @@ class HttpConnector {
 
     public String post(File audioFile) {
         // TODO Make the request and get the string response.
+        HttpURLConnection urlConnection = null;
+        InputStream is = null;
+        OutputStream os = null;
         try {
             URL url = new URL(this.mUrl);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setDoInput(true);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
@@ -61,7 +64,7 @@ class HttpConnector {
             }
             urlConnection.connect();
 
-            OutputStream os = urlConnection.getOutputStream();
+            os = urlConnection.getOutputStream();
             FileInputStream fis = new FileInputStream(audioFile);
             BufferedInputStream bis = new BufferedInputStream(fis);
 
@@ -74,7 +77,7 @@ class HttpConnector {
             }
             os.close();
 
-            InputStream is = urlConnection.getInputStream();
+            is = urlConnection.getInputStream();
 
             final char[] buffer = new char[bufferSize];
             final StringBuilder out = new StringBuilder();
@@ -87,12 +90,21 @@ class HttpConnector {
                     out.append(buffer, 0, rsz);
                 }
             }
-            is.close();
             return out.toString();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if (os != null)
+                    os.close();
+                if (is != null)
+                    is.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (urlConnection != null)
+                urlConnection.disconnect();
         }
 
         return null;
