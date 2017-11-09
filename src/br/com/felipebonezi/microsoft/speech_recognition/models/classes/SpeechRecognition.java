@@ -1,5 +1,8 @@
 package br.com.felipebonezi.microsoft.speech_recognition.models.classes;
 
+/**
+ * Class to model the result of HTTP request from Speech Recognition API.
+ */
 public class SpeechRecognition {
 
     private final long offset;
@@ -23,4 +26,5 @@ public class SpeechRecognition {
     public String getText() {
         return text;
     }
+
 }

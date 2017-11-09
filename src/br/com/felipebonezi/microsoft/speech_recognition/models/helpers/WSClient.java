@@ -1,8 +1,11 @@
 package br.com.felipebonezi.microsoft.speech_recognition.models.helpers;
 
-import br.com.felipebonezi.microsoft.speech_recognition.models.classes.*;
+import br.com.felipebonezi.microsoft.speech_recognition.models.classes.Audio;
+import br.com.felipebonezi.microsoft.speech_recognition.models.classes.Language;
+import br.com.felipebonezi.microsoft.speech_recognition.models.classes.SpeechRecognition;
 import br.com.felipebonezi.microsoft.speech_recognition.models.enumerates.OutputFormat;
 import br.com.felipebonezi.microsoft.speech_recognition.models.enumerates.RecognitionMode;
+import br.com.felipebonezi.microsoft.speech_recognition.models.exceptions.MicrosoftException;
 import com.oracle.javafx.jmx.json.JSONDocument;
 import com.oracle.javafx.jmx.json.JSONFactory;
 import com.oracle.javafx.jmx.json.JSONReader;
@@ -74,52 +77,59 @@ public class WSClient {
     private String mSubscriptionKey;
 
     public WSClient() {
-        ResourceBundle rb = ResourceBundle.getBundle("microsoft-config");
-        this.mSubscriptionKey = rb.getString("microsoft.speechRecognition.subscriptionKey");
+        ResourceBundle bundle = ResourceBundle.getBundle("microsoft-config");
+        if (bundle != null) {
+            this.mSubscriptionKey = bundle.getString("microsoft.speechRecognition.subscriptionKey");
+        }
     }
 
     public WSClient(String subscriptionKey) {
         this.mSubscriptionKey = subscriptionKey;
     }
 
-    private boolean checkRequirements(Audio audio) {
-        // TODO Throws an Exception or not?
+    /**
+     * This method is responsible of check all required fields and parameters before do anything - i.e. like recognize an audio file.
+     * @param audio - Audio class.
+     * @throws MicrosoftException - throw an exception if any field is missing or invalid.
+     */
+    private void checkRequirements(Audio audio) throws MicrosoftException {
         if (this.mSubscriptionKey == null)
-            return false;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_SUBSCRIPTION_KEY, "You must use a valid 'Subscription Key' - see more at https://azure.microsoft.com/try/cognitive-services/");
         else if (audio == null)
-            return false;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_AUDIO_CLASS, "The parameter 'audio' can't be null.");
 
         RecognitionMode recognitionMode = audio.getRecognitionMode();
         if (recognitionMode == null)
-            return false;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_RECOGNITION_MODE, "The parameter 'audio.recognitionMode' can't be null.");
 
         Language language = audio.getLanguage();
         if (language == null)
-            return false;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_LANGUAGE, "The parameter 'audio.language' can't be null.");
 
         if (!language.isSupported(recognitionMode))
-            return false;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_LANGUAGE_NOT_SUPPORTED, String.format("The language isn't supported over the recognition mode (%s).", recognitionMode.name()));
 
         String languageTag = language.getTag();
         if (languageTag == null || languageTag.isEmpty())
-            return false;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_LANGUAGE, "The parameter 'audio.language.tag' can't be null or empty.");
 
         OutputFormat format = audio.getOutputFormat();
         if (format == null)
-            return false;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_OUTPUT_FORMAT, "The parameter 'audio.outputFormat' can't be null.");
 
         File audioFile = audio.getAudioFile();
         if (audioFile == null || !audioFile.exists())
-            return false;
-
-        return true;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_AUDIO_FILE, "The parameter 'audio.audioFile' can't be null or doesn't exist.");
     }
 
-    public SpeechRecognition recognize(Audio audio) {
-        if (!checkRequirements(audio)) {
-            // TODO Throws an Exception or not?
-            return null;
-        }
+    /**
+     * This method is responsible of recognize an audio using `Microsoft Speech Recognition` API.
+     * @param audio - Audio class.
+     * @return SpeechRecognition class with all data returned by Microsoft API.
+     * @throws MicrosoftException - throw and exception if any field is missing or invalid.
+     */
+    public SpeechRecognition recognize(Audio audio) throws MicrosoftException {
+        checkRequirements(audio);
 
         RecognitionMode recognitionMode = audio.getRecognitionMode();
         String recognitionModeNam = recognitionMode.name();
@@ -142,24 +152,19 @@ public class WSClient {
                 .post(audioFile);
 
         if (result == null || result.isEmpty()) {
-            // TODO Throws an Exception or not?
-            return null;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_HTTP_RESULT, "The result is null or empty.");
         }
 
-        // TODO Check if WS returns as `text/xml` or `application/json`.
         JSONFactory instance = JSONFactory.instance();
         JSONReader jsonReader = instance.makeReader(new StringReader(result));
-
         JSONDocument jsonDocument = jsonReader.build();
         if (jsonDocument == null) {
-            // TODO Throws an Exception or not?
-            return null;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_JSON, "We can't parse the result as JSON.");
         }
 
         String status = jsonDocument.getString(Parameter.RECOGNITION_STATUS);
         if (status == null || !status.equalsIgnoreCase(Status.SUCCESS)) {
-            // TODO Throws an Exception or not?
-            return null;
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_JSON, "JSON hasn't 'status' parameter or is unsuccessfully result.");
         }
 
         Number offset = jsonDocument.getNumber(Parameter.OFFSET);

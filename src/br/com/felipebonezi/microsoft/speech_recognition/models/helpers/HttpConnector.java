@@ -1,42 +1,75 @@
 package br.com.felipebonezi.microsoft.speech_recognition.models.helpers;
 
+import br.com.felipebonezi.microsoft.speech_recognition.models.exceptions.MicrosoftException;
+
 import java.io.*;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 
 class HttpConnector {
 
+    /**
+     * API url.
+     */
     private String mUrl;
+
+    /**
+     * Request headers.
+     */
     private Map<String, List<String>> mHeaders;
 
-    // TODO Check `Builder` pattern.
     private HttpConnector() {
         this.mHeaders = new HashMap<>();
     }
 
-    public static HttpConnector initialize() {
+    /**
+     * Initialize the connector using this class.
+     * @return HttpConnector class.
+     */
+    static HttpConnector initialize() {
         return new HttpConnector();
     }
 
-    public HttpConnector url(String url) {
+    /**
+     * Configure the API url.
+     * @param url - API url.
+     * @return HttpConnector class.
+     */
+    HttpConnector url(String url) {
         this.mUrl = url;
         return this;
     }
 
-    public HttpConnector addHeader(String key, String value) {
+    /**
+     * Add one header to the Map entity.
+     * @param key - Header key.
+     * @param value - Header value.
+     * @return HttpConnector class.
+     */
+    HttpConnector addHeader(String key, String value) {
         addHeader(key, new String[] {value});
         return this;
     }
 
-    public HttpConnector addHeader(String key, String... values) {
+    /**
+     * Add multiples values for one header to the Map entity.
+     * @param key - Header key.
+     * @param values - Header value.
+     * @return HttpConnector class.
+     */
+    HttpConnector addHeader(String key, String... values) {
         this.mHeaders.put(key, Arrays.asList(values));
         return this;
     }
 
-    public String post(File audioFile) {
-        // TODO Make the request and get the string response.
+    /**
+     * Make the POST request.
+     * @param audioFile - Audio file.
+     * @return String result from the request.
+     * @throws MicrosoftException - throw an exception if any parameter is missing or invalid.
+     */
+    String post(File audioFile) throws MicrosoftException {
         HttpURLConnection urlConnection = null;
         InputStream is = null;
         OutputStream os = null;
@@ -93,6 +126,7 @@ class HttpConnector {
             return out.toString();
         } catch (IOException e) {
             e.printStackTrace();
+            throw new MicrosoftException(MicrosoftException.Code.ERROR_INVALID_HTTP_REQUEST, "An error occurred over HTTP request.");
         } finally {
             try {
                 if (os != null)
@@ -106,7 +140,6 @@ class HttpConnector {
             if (urlConnection != null)
                 urlConnection.disconnect();
         }
-
-        return null;
     }
+
 }

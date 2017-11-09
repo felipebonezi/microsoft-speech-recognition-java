@@ -2,7 +2,10 @@ package br.com.felipebonezi.microsoft.speech_recognition.models.classes;
 
 import br.com.felipebonezi.microsoft.speech_recognition.models.enumerates.RecognitionMode;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Language {
 
@@ -15,6 +18,7 @@ public class Language {
      * of the IANA Language Subtag Registry.[1][2][3][4] Components of language tags are drawn from
      * ISO 639, ISO 15924, ISO 3166-1, and UN M.49.
      */
+    // TODO Check if the language support IETF.
     public static final class IETFLanguageTag {
         public static final String PT_BR = "pt-BR";
 

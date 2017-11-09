@@ -3,7 +3,7 @@ With the cloud-based `Microsoft Speech Service`, you can develop applications us
 To use speech recognition REST API, the steps are as follows:
 1. Get a subscription key for using Speech API - [Subscribe here](https://azure.microsoft.com/try/cognitive-services/).
 2. Configure it on `conf/microsoft-config.properties`.
-3. Save your audio files at `/audios` folder.
+3. Save your audio files at `/audios` folder (Check if this folder is configured as `resource folder` on your IDE).
 4. Compile and Run!
 
 The Speech REST API has some limitations:
@@ -19,4 +19,4 @@ Understand the text converted from audio using LUIS	| No
 
 # Collaborators
 - Felipe Bonezi (felipebonezi@gmail.com)
-- Lucas De Carli (luhumenh@microsoft.com)
+- Lucas De Carli
