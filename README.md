@@ -19,4 +19,4 @@ Understand the text converted from audio using LUIS	| No
 
 # Collaborators
 - Felipe Bonezi (felipebonezi@gmail.com)
-- Lucas De Carli (@)
+- Lucas De Carli (luhumenh@microsoft.com)
